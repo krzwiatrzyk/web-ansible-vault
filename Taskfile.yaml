@@ -64,3 +64,20 @@ tasks:
     curl -X POST "http://127.0.0.1:8080/function/web-ansible-vault?VAULT_PASSWORD=some_password" 
     -H "Content-Type: text/x-yaml" --data-binary "@test/data.yaml"
   - cat test/data.yaml | faas-cli invoke web-ansible-vault --query VAULT_PASSWORD=some_password
+
+  function:manifest:
+    dir: openfaas-function
+    cmds:
+    - faas-cli -f web-ansible-vault.yml generate > ../deploy/function.yaml
+
+  skaffold:install:
+    cmds:
+    - curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+    - sudo install skaffold /usr/local/bin/
+    - rm skaffold
+    status:
+    - command -v skaffold
+
+  tooljet:install:
+    cmds:
+    - skaffold run

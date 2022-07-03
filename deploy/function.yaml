@@ -1,0 +1,10 @@
+---
+apiVersion: openfaas.com/v1
+kind: Function
+metadata:
+  name: web-ansible-vault
+  namespace: openfaas-fn
+spec:
+  name: web-ansible-vault
+  image: witcherek7/web-ansible-vault:0.0.1
+
