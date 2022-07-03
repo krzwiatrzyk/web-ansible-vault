@@ -1,0 +1,66 @@
+version: 3
+
+tasks:
+  kind:install:
+    cmds:
+    - arkade get kind
+    status:
+    - command -v kind
+
+  kind:cluster:create:
+    deps:
+    - kind:install
+    cmds:
+    - kind create cluster --config kind-config.yaml
+
+  faas-cli:install:
+    cmds:
+    - arkade get faas-cli
+    status:
+    - command -v faas-cli
+
+  openfaas:install:
+    cmds:
+    - arkade install openfaas
+
+  openfaas:forward:
+  - kubectl port-forward --address 0.0.0.0 -n openfaas svc/gateway 8080:8080 &
+
+  openfaas:password:
+  - kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo
+  
+  faas-cli:login:
+    env:
+      PASSWORD: 
+        sh: kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo
+    cmds:
+    - echo -n ${PASSWORD} 
+    - echo -n ${PASSWORD} | faas-cli login --username admin --password-stdin
+    status:
+    - faas-cli list
+
+  faas-cli:store:
+    desc: |
+      Show all available predefined functions
+    cmds:
+    - faas-cli store list
+
+  faas-cli:pull:templates:
+  - faas-cli template pull
+
+  function:init:
+    dir: openfaas-function
+    cmds:
+    - faas-cli new web-ansible-vault --lang dockerfile
+
+  function:deploy:
+    dir: openfaas-function
+    cmds:
+    - faas-cli up -f web-ansible-vault.yml
+    - kubectl rollout status -n openfaas-fn deployment/web-ansible-vault --watch
+
+  function:test:
+  - >
+    curl -X POST "http://127.0.0.1:8080/function/web-ansible-vault?VAULT_PASSWORD=some_password" 
+    -H "Content-Type: text/x-yaml" --data-binary "@test/data.yaml"
+  - cat test/data.yaml | faas-cli invoke web-ansible-vault --query VAULT_PASSWORD=some_password

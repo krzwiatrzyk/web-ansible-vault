@@ -1,0 +1,10 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+functions:
+  web-ansible-vault:
+    lang: dockerfile
+    handler: ./web-ansible-vault
+    image: witcherek7/web-ansible-vault:0.0.1
+
