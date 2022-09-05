@@ -8,3 +8,14 @@ deploy:
         repo: https://krzwiatrzyk.github.io/charts/
         createNamespace: true
         namespace: tooljet
+      - name: openfaas
+        remoteChart: openfaas
+        repo: https://openfaas.github.io/faas-netes
+        createNamespace: true
+        namespace: openfaas
+        setValues:
+          operator.create: true
+          generateBasicAuth: true
+  kubectl:
+    manifests:
+      - deploy/function.yaml

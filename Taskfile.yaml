@@ -12,6 +12,10 @@ tasks:
     - kind:install
     cmds:
     - kind create cluster --config kind-config.yaml
+    - kubectl create ns openfaas-fn
+
+  kind:cluster:delete:
+  - kind delete cluster --name web-ansible-vault
 
   faas-cli:install:
     cmds:
@@ -61,9 +65,10 @@ tasks:
 
   function:test:
   - >
-    curl -X POST "http://127.0.0.1:8080/function/web-ansible-vault?VAULT_PASSWORD=some_password" 
-    -H "Content-Type: text/x-yaml" --data-binary "@test/data.yaml"
-  - cat test/data.yaml | faas-cli invoke web-ansible-vault --query VAULT_PASSWORD=some_password
+    curl -X POST "http://127.0.0.1:8080/function/web-ansible-vault?SOME_QUERY=123" 
+    -H "Content-Type: text/x-yaml" -H "VAULT_PASSWORD: some_password" --data-binary "@test/data.yaml"
+  - cat test/data.yaml | faas-cli invoke web-ansible-vault --query SOME_QUERY=123 --header VAULT_PASSWORD=some_password
+
 
   function:manifest:
     dir: openfaas-function
